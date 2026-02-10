@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Socket.IO Test</title>
+  <script src="node_modules/socket.io/client-dist/socket.io.js"></script>
+</head>
+<body>
+  <h1>Socket.IO Test Client</h1>
+  <div id="status">Connecting...</div>
+  <button onclick="startGame()">Start Game</button>
+  <button onclick="buzz()">Buzz</button>
+  <pre id="log"></pre>
+
+  <script>
+    const log = document.getElementById("log");
+    function add(msg) {
+      log.textContent += msg + "\n";
+      console.log(msg);
+    }
+
+    const socket = io("http://localhost:3000", {
+      transports: ["websocket"],
+      reconnection: true,
+    });
+
+    socket.on("connect", () => {
+      document.getElementById("status").textContent = "Connected: " + socket.id;
+      add("Connected with ID: " + socket.id);
+    });
+
+    socket.on("disconnect", () => {
+      add("Disconnected");
+    });
+
+    socket.on("connect_error", (err) => {
+      add("Connection error: " + err.message);
+    });
+
+    socket.on("game_started", () => {
+      add("Received game_started event!");
+    });
+
+    socket.on("buzzed", (data) => {
+      add("Received buzzed event, winner: " + data.winnerId);
+    });
+
+    function startGame() {
+      add("Emitting start_game...");
+      socket.emit("start_game");
+    }
+
+    function buzz() {
+      add("Emitting buzz...");
+      socket.emit("buzz", socket.id);
+    }
+  </script>
+</body>
+</html>
